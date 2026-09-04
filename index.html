@@ -1,0 +1,405 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Beige WhatsApp Sender</title>
+  <style>
+    :root { --cream:#f3ecdf; --paper:#fffdf8; --brown:#3a261d; --muted:#78685e; --gold:#aa7b45; --red:#9d3f39; --green:#43705a; }
+    * { box-sizing:border-box; }
+    body { margin:0; background:var(--cream); color:var(--brown); font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+    .wrap { width:min(1100px,calc(100% - 28px)); margin:28px auto 60px; }
+    header { display:flex; justify-content:space-between; gap:20px; align-items:flex-end; border-bottom:1px solid #cab9a6; padding-bottom:18px; }
+    h1 { font-family:Georgia,serif; font-size:clamp(32px,5vw,58px); font-weight:500; letter-spacing:-2px; margin:0; }
+    .eyebrow { letter-spacing:.18em; text-transform:uppercase; font-size:12px; color:var(--muted); }
+    .badge { background:var(--brown); color:#fff; border-radius:99px; padding:9px 13px; font-size:12px; white-space:nowrap; }
+    .notice { margin:20px 0; padding:14px 16px; border:1px solid #d4c2ad; background:#fbf5e9; border-radius:12px; line-height:1.45; }
+    .grid { display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+    .card { background:var(--paper); border:1px solid #d9cbbb; border-radius:16px; padding:20px; box-shadow:0 8px 25px rgba(58,38,29,.05); }
+    .card.full { grid-column:1 / -1; }
+    h2 { font-family:Georgia,serif; font-weight:500; margin:0 0 14px; font-size:24px; }
+    label { display:block; font-size:13px; font-weight:650; margin:12px 0 7px; }
+    input[type=file], input[type=number], input[type=time], textarea, select { width:100%; border:1px solid #cdbca9; background:#fff; color:var(--brown); border-radius:10px; padding:11px; font:inherit; }
+    textarea { min-height:190px; resize:vertical; line-height:1.45; }
+    button { border:0; border-radius:10px; padding:11px 15px; font:inherit; font-weight:700; cursor:pointer; background:var(--brown); color:#fff; }
+    button.secondary { background:#e8ddcf; color:var(--brown); }
+    button.green { background:var(--green); }
+    button.red { background:var(--red); }
+    button:disabled { opacity:.4; cursor:not-allowed; }
+    .row { display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top:14px; }
+    .check { display:flex; gap:9px; align-items:flex-start; font-weight:400; line-height:1.4; }
+    .check input { margin-top:3px; }
+    .stats { display:grid; grid-template-columns:repeat(5,1fr); gap:10px; margin-top:16px; }
+    .stat { background:#f5eee4; padding:13px; border-radius:10px; }
+    .stat b { display:block; font:26px Georgia,serif; }
+    small,.muted { color:var(--muted); }
+    .hidden { display:none !important; }
+    .queue-head { display:flex; justify-content:space-between; gap:16px; align-items:center; margin-bottom:12px; }
+    .table-wrap { overflow:auto; border:1px solid #ded1c2; border-radius:12px; max-height:440px; }
+    table { width:100%; border-collapse:collapse; min-width:760px; background:#fff; }
+    th,td { text-align:left; padding:11px 12px; border-bottom:1px solid #eee5da; font-size:13px; vertical-align:top; }
+    th { position:sticky; top:0; background:#eee3d5; z-index:1; }
+    .status { display:inline-block; padding:5px 8px; border-radius:99px; background:#eee; font-size:11px; font-weight:700; }
+    .status.sent { background:#dceade; color:#27513d; }
+    .status.skipped { background:#eddeda; color:#7b342f; }
+    .status.pending { background:#eee3d5; }
+    .tiny { padding:7px 9px; font-size:12px; }
+    .current { border:2px solid var(--gold); background:#fffaf0; padding:14px; border-radius:12px; margin:12px 0; white-space:pre-wrap; line-height:1.45; }
+    .media-preview { display:flex; gap:12px; align-items:center; margin-top:10px; padding:10px; border:1px solid #ded1c2; border-radius:10px; background:#fffaf4; }
+    .media-preview img { width:74px; height:74px; border-radius:8px; object-fit:cover; }
+    .controls { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
+    .step { display:inline-flex; align-items:center; justify-content:center; width:23px; height:23px; margin-right:6px; border-radius:50%; background:#fff; color:var(--brown); font-size:12px; }
+    .gate { padding:10px 12px; border-radius:10px; background:#f4e8d7; color:#624738; margin:10px 0; font-size:13px; }
+    footer { margin-top:22px; color:var(--muted); font-size:12px; line-height:1.5; }
+    @media(max-width:760px){ .grid{grid-template-columns:1fr}.card.full{grid-column:auto}.stats{grid-template-columns:repeat(2,1fr)}.controls{grid-template-columns:repeat(2,1fr)}header{align-items:flex-start;flex-direction:column} }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <header>
+      <div><div class="eyebrow">WhatsApp Web campaign queue</div><h1>Beige Sender</h1></div>
+      <div class="badge">Free · final Send stays manual</div>
+    </header>
+
+    <div class="notice"><strong>Built for desktop Chrome + WhatsApp Web:</strong> import the contact list once, prepare the queue, and use one reusable WhatsApp Web tab. Your progress survives refreshes. Names are optional, opted-out and ineligible rows are suppressed, and the final WhatsApp Send click remains yours.</div>
+
+    <section class="grid">
+      <div class="card">
+        <h2>1. Import contacts</h2>
+        <p class="muted">Export the CONTACTS tab as CSV, then select it here. Required: Phone or WhatsApp. Name is optional. Beige CRM columns are detected automatically.</p>
+        <input id="file" type="file" accept=".csv,.tsv,text/csv,text/tab-separated-values">
+        <label>Default country</label>
+        <select id="country"><option value="91">India (+91)</option><option value="">Numbers already include country code</option></select>
+        <div id="mapping" class="hidden">
+          <label>Name column</label><select id="nameCol"></select>
+          <label>Phone column</label><select id="phoneCol"></select>
+          <label>Opt-out column</label><select id="optCol"></select>
+          <label>Marketing eligible column</label><select id="eligibleCol"></select>
+          <label>Send readiness column</label><select id="readinessCol"></select>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>2. Write campaign</h2>
+        <label>Message</label>
+        <textarea id="message">{greeting} this is Beige 🤎
+
+We’re opening preorders for our latest dessert edit.
+
+Reply MENU to see what’s available or ORDER to place an order.
+
+If you’d rather not receive Beige updates, reply STOP.</textarea>
+        <small>Use <code>{greeting}</code> to produce “Hi Riya,” when a name exists and simply “Hi,” when it does not. <code>{name}</code> is left blank when unavailable.</small>
+        <label>Sending mode</label>
+        <select id="mode"><option value="auto">Automatic device detection</option><option value="web">WhatsApp Web (desktop)</option><option value="mobile">WhatsApp app (iPhone)</option></select>
+        <div class="row"><button id="launchWa" class="secondary">Open WhatsApp Web and sign in</button></div>
+        <label>Campaign photo (optional)</label>
+        <input id="media" type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif">
+        <div id="mediaPreview" class="media-preview hidden"><img id="mediaImage" alt="Selected campaign creative"><div><strong id="mediaName"></strong><br><small>Stored only in this browser session.</small></div></div>
+      </div>
+
+      <div class="card full">
+        <h2>3. Review and prepare</h2>
+        <div class="controls">
+          <div><label>Sending starts</label><input id="startTime" type="time" value="10:00"></div>
+          <div><label>Sending ends</label><input id="endTime" type="time" value="20:00"></div>
+          <div><label>Daily cap</label><input id="dailyLimit" type="number" min="1" max="200" value="20"></div>
+          <div><label>Pause after each send</label><select id="cooldown"><option value="30">30 seconds</option><option value="60" selected>1 minute</option><option value="120">2 minutes</option><option value="300">5 minutes</option></select></div>
+        </div>
+        <label class="check"><input id="confirm" type="checkbox"> <span>These contacts expect Beige messages. I will honour every STOP request and personally check the recipient before pressing Send.</span></label>
+        <div class="row">
+          <button id="prepare" disabled>Prepare send queue</button>
+          <button id="reset" class="secondary">Reset</button>
+        </div>
+        <div class="stats">
+          <div class="stat"><b id="total">0</b><span>Imported</span></div>
+          <div class="stat"><b id="ready">0</b><span>Ready</span></div>
+          <div class="stat"><b id="suppressed">0</b><span>Opted out</span></div>
+          <div class="stat"><b id="ineligible">0</b><span>Ineligible</span></div>
+          <div class="stat"><b id="invalid">0</b><span>Invalid/duplicate</span></div>
+        </div>
+      </div>
+
+      <div id="sender" class="card full hidden">
+        <div class="queue-head"><div><h2>4. Send one at a time</h2><div id="progress" class="muted"></div></div><button id="export" class="secondary">Export campaign log</button></div>
+        <div id="current" class="current"></div>
+        <div id="gate" class="gate"></div>
+        <div class="row">
+          <button id="open" class="green"><span class="step">1</span>Open chat</button>
+          <button id="copyPhoto" class="secondary"><span class="step">2</span>Copy photo</button>
+          <button id="copy" class="secondary"><span class="step">3</span>Copy caption</button>
+          <button id="mark"><span class="step">4</span>Sent — next contact</button>
+          <button id="share" class="green">iPhone: share photo + caption</button>
+          <button id="downloadPhoto" class="secondary">Download photo</button>
+          <button id="skip" class="red">Skip & next</button>
+        </div>
+        <p class="muted"><strong>Desktop text:</strong> open the chat, confirm the number, and press Send in WhatsApp Web. <strong>Desktop photo:</strong> copy the photo, paste it into WhatsApp Web with Ctrl+V, then copy/paste the caption. If image copying is unavailable, download and attach it. <strong>iPhone:</strong> use the Share button. This page never presses Send for you.</p>
+        <div class="table-wrap"><table><thead><tr><th>#</th><th>Name</th><th>Phone</th><th>Status</th><th>Time</th><th>Action</th></tr></thead><tbody id="queue"></tbody></table></div>
+      </div>
+    </section>
+
+    <footer>Campaign data stays on this device. The page uses WhatsApp's official click-to-chat URL and does not inspect or control WhatsApp Web. Daily limits and pauses are workflow controls, not a substitute for recipient permission.</footer>
+  </main>
+
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  let rows=[], headers=[], queue=[], cursor=0, mediaFile=null, mediaUrl='', nextAllowedAt=0, whatsappTab=null;
+  const STATE_KEY='beigeSenderStateV3', DB_NAME='beigeSenderMedia', MEDIA_KEY='campaignMedia';
+
+  function openDb(){
+    return new Promise((resolve,reject)=>{
+      const req=indexedDB.open(DB_NAME,1);
+      req.onupgradeneeded=()=>req.result.createObjectStore('files');
+      req.onsuccess=()=>resolve(req.result); req.onerror=()=>reject(req.error);
+    });
+  }
+  async function mediaStore(action,value){
+    try{
+      const db=await openDb();
+      return await new Promise((resolve,reject)=>{
+        const tx=db.transaction('files',action==='get'?'readonly':'readwrite');
+        const store=tx.objectStore('files');
+        const req=action==='get'?store.get(MEDIA_KEY):action==='delete'?store.delete(MEDIA_KEY):store.put(value,MEDIA_KEY);
+        req.onsuccess=()=>resolve(req.result); req.onerror=()=>reject(req.error);
+      });
+    }catch{return null;}
+  }
+  function saveState(){
+    try{
+      localStorage.setItem(STATE_KEY,JSON.stringify({rows,headers,queue,cursor,nextAllowedAt,
+        country:$('country').value,nameCol:$('nameCol').value,phoneCol:$('phoneCol').value,optCol:$('optCol').value,
+        eligibleCol:$('eligibleCol').value,readinessCol:$('readinessCol').value,
+        message:$('message').value,mode:$('mode').value,confirmed:$('confirm').checked,
+        startTime:$('startTime').value,endTime:$('endTime').value,dailyLimit:$('dailyLimit').value,cooldown:$('cooldown').value,
+        stats:{total:$('total').textContent,ready:$('ready').textContent,suppressed:$('suppressed').textContent,ineligible:$('ineligible').textContent,invalid:$('invalid').textContent},
+        hasMedia:!!mediaFile,mediaName:mediaFile?.name||''}));
+    }catch{}
+  }
+  async function restoreState(){
+    let s; try{s=JSON.parse(localStorage.getItem(STATE_KEY)||localStorage.getItem('beigeSenderStateV2')||'null');}catch{}
+    if(!s) return;
+    rows=s.rows||[]; headers=s.headers||[]; queue=s.queue||[]; cursor=Number(s.cursor)||0; nextAllowedAt=Number(s.nextAllowedAt)||0;
+    $('country').value=s.country??'91'; $('message').value=s.message||$('message').value; $('mode').value=s.mode||'auto'; $('confirm').checked=!!s.confirmed;
+    $('startTime').value=s.startTime||'10:00'; $('endTime').value=s.endTime||'20:00'; $('dailyLimit').value=s.dailyLimit||'20'; $('cooldown').value=s.cooldown||'60';
+    if(headers.length){
+      fillSelect($('nameCol')); fillSelect($('phoneCol'),false); fillSelect($('optCol')); fillSelect($('eligibleCol')); fillSelect($('readinessCol'));
+      $('nameCol').value=s.nameCol??''; $('phoneCol').value=s.phoneCol??''; $('optCol').value=s.optCol??'';
+      $('eligibleCol').value=s.eligibleCol??''; $('readinessCol').value=s.readinessCol??'';
+      $('mapping').classList.remove('hidden');
+    }
+    for(const id of ['total','ready','suppressed','ineligible','invalid']) $(id).textContent=s.stats?.[id]||'0';
+    $('prepare').disabled=!(rows.length&&$('confirm').checked);
+    if(s.hasMedia){
+      mediaFile=await mediaStore('get');
+      if(mediaFile){ mediaUrl=URL.createObjectURL(mediaFile); $('mediaImage').src=mediaUrl; $('mediaName').textContent=mediaFile.name||s.mediaName; $('mediaPreview').classList.remove('hidden'); }
+    }
+    if(queue.length){$('sender').classList.remove('hidden'); render();}
+  }
+
+  function parseDelimited(text, delimiter) {
+    const out=[]; let row=[], field='', quoted=false;
+    for(let i=0;i<text.length;i++){
+      const c=text[i], n=text[i+1];
+      if(c==='"' && quoted && n==='"'){ field+='"'; i++; }
+      else if(c==='"'){ quoted=!quoted; }
+      else if(c===delimiter && !quoted){ row.push(field); field=''; }
+      else if((c==='\n'||c==='\r') && !quoted){
+        if(c==='\r'&&n==='\n') i++;
+        row.push(field); field='';
+        if(row.some(v=>v.trim()!=='')) out.push(row);
+        row=[];
+      } else field+=c;
+    }
+    row.push(field); if(row.some(v=>v.trim()!=='')) out.push(row);
+    return out;
+  }
+
+  function guessColumn(needles){
+    const lowered=headers.map(h=>h.toLowerCase().replace(/[^a-z0-9]/g,''));
+    const idx=lowered.findIndex(h=>needles.some(n=>h.includes(n)));
+    return idx>=0?String(idx):'';
+  }
+
+  function fillSelect(select, optional=true){
+    select.innerHTML='';
+    if(optional) select.add(new Option('— Not available —',''));
+    headers.forEach((h,i)=>select.add(new Option(h||`Column ${i+1}`,String(i))));
+  }
+
+  function isOptedOut(value){ return /^(yes|y|true|1|stop|stopped|opted\s*out)$/i.test(String(value||'').trim()); }
+  function isEligible(value){ return /^(yes|y|true|1|eligible|ready|approved)$/i.test(String(value||'').trim()); }
+
+  function normalizePhone(raw){
+    let d=String(raw||'').replace(/\D/g,'').replace(/^00/,'');
+    if(d.length===10 && $('country').value) d=$('country').value+d;
+    if(d.length<10 || d.length>15) return '';
+    return d;
+  }
+
+  function csvEscape(v){ const s=String(v??''); return /[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s; }
+
+  $('file').addEventListener('change', async e => {
+    const file=e.target.files[0]; if(!file) return;
+    const text=await file.text();
+    const delimiter=(file.name.toLowerCase().endsWith('.tsv') || (text.split('\t').length>text.split(',').length))?'\t':',';
+    const parsed=parseDelimited(text,delimiter);
+    if(parsed.length<2){ alert('The file needs a header row and at least one contact.'); return; }
+    headers=parsed[0].map(x=>x.trim());
+    rows=parsed.slice(1).map(r=>headers.map((_,i)=>(r[i]||'').trim()));
+    fillSelect($('nameCol')); fillSelect($('phoneCol'),false); fillSelect($('optCol')); fillSelect($('eligibleCol')); fillSelect($('readinessCol'));
+    $('nameCol').value=guessColumn(['name','customer']);
+    $('phoneCol').value=guessColumn(['whatsapp','phone','mobile','contact']);
+    $('optCol').value=guessColumn(['optout','unsubscribe','stopped']);
+    $('eligibleCol').value=guessColumn(['marketingeligible','eligible','optin']);
+    $('readinessCol').value=guessColumn(['sendreadiness','readiness','sendready']);
+    $('mapping').classList.remove('hidden');
+    $('total').textContent=rows.length;
+    $('prepare').disabled=!$('confirm').checked; saveState();
+  });
+
+  $('confirm').addEventListener('change',()=>{$('prepare').disabled=!(rows.length && $('confirm').checked);saveState();});
+  $('message').addEventListener('input',saveState); $('country').addEventListener('change',saveState); $('mode').addEventListener('change',saveState);
+  ['nameCol','phoneCol','optCol','eligibleCol','readinessCol','startTime','endTime','dailyLimit','cooldown'].forEach(id=>$(id).addEventListener('change',()=>{render();saveState();}));
+
+  $('media').addEventListener('change',async e=>{
+    mediaFile=e.target.files[0]||null;
+    if(mediaUrl) URL.revokeObjectURL(mediaUrl);
+    if(mediaFile){
+      mediaUrl=URL.createObjectURL(mediaFile); await mediaStore('put',mediaFile);
+      $('mediaImage').src=mediaUrl;
+      $('mediaName').textContent=mediaFile.name;
+      $('mediaPreview').classList.remove('hidden');
+    } else {
+      mediaUrl=''; $('mediaPreview').classList.add('hidden'); await mediaStore('delete');
+    }
+    render(); saveState();
+  });
+
+  $('prepare').addEventListener('click',()=>{
+    const ni=$('nameCol').value, pi=$('phoneCol').value, oi=$('optCol').value, ei=$('eligibleCol').value, ri=$('readinessCol').value;
+    let suppressed=0, ineligible=0, invalid=0; queue=[];
+    const seen=new Set();
+    rows.forEach((r,index)=>{
+      const opted=oi!=='' && isOptedOut(r[Number(oi)]);
+      if(opted){ suppressed++; return; }
+      if((ei!=='' && !isEligible(r[Number(ei)])) || (ri!=='' && !isEligible(r[Number(ri)]))){ ineligible++; return; }
+      const phone=normalizePhone(r[Number(pi)]);
+      if(!phone || seen.has(phone)){ invalid++; return; }
+      seen.add(phone);
+      const name=ni===''?'':r[Number(ni)];
+      const message=$('message').value.replaceAll('{greeting}',name?`Hi ${name},`:'Hi,').replaceAll('{name}',name||'');
+      queue.push({sourceRow:index+2,name:name||'No name',phone,message,status:'pending',time:'',sentAt:''});
+    });
+    cursor=0;
+    $('ready').textContent=queue.length; $('suppressed').textContent=suppressed; $('ineligible').textContent=ineligible; $('invalid').textContent=invalid;
+    $('sender').classList.remove('hidden'); render(); saveState();
+    if(navigator.storage?.persist) navigator.storage.persist().catch(()=>{});
+    $('sender').scrollIntoView({behavior:'smooth'});
+  });
+
+  function advance(){ const n=queue.findIndex((q,i)=>i>cursor && q.status==='pending'); cursor=n>=0?n:queue.findIndex(q=>q.status==='pending'); render(); saveState(); }
+  function dayKey(value){ const d=value instanceof Date?value:new Date(value); return Number.isNaN(d.getTime())?'':`${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`; }
+  function sentToday(){ const today=dayKey(new Date()); return queue.filter(q=>q.status==='sent' && dayKey(q.sentAt||q.time)===today).length; }
+  function minutesNow(){ const d=new Date(); return d.getHours()*60+d.getMinutes(); }
+  function parseClock(value,fallback){ const m=String(value||'').match(/^(\d{1,2}):(\d{2})$/); return m?Number(m[1])*60+Number(m[2]):fallback; }
+  function gateState(){
+    const limit=Math.max(1,Number($('dailyLimit').value)||20), today=sentToday(), wait=Math.max(0,Math.ceil((nextAllowedAt-Date.now())/1000));
+    const start=parseClock($('startTime').value,0), end=parseClock($('endTime').value,1439), now=minutesNow();
+    const inside=start<=end?(now>=start&&now<=end):(now>=start||now<=end);
+    if(today>=limit) return {ok:false,text:`Daily cap reached: ${today}/${limit} sent today. The pending queue is saved for tomorrow.`};
+    if(!inside) return {ok:false,text:`Outside your sending window (${$('startTime').value}–${$('endTime').value}). The queue is saved.`};
+    if(wait>0) return {ok:false,text:`Pause active. Next chat can open in ${wait} second${wait===1?'':'s'}.`};
+    return {ok:true,text:`Ready · ${today}/${limit} sent today · final recipient check and Send remain manual.`};
+  }
+
+  function render(){
+    const pending=queue.filter(q=>q.status==='pending').length, sent=queue.filter(q=>q.status==='sent').length, gate=gateState();
+    $('progress').textContent=`${sent} sent · ${pending} pending · ${queue.length} total · ${sentToday()} sent today`;
+    const current=queue[cursor];
+    $('current').textContent=current?`${current.name} · +${current.phone}\n\n${current.message}`:'Campaign queue complete.';
+    $('gate').textContent=current?gate.text:'No pending contacts remain.';
+    $('open').disabled=!current || current.status!=='pending' || !gate.ok;
+    ['copy','mark','skip'].forEach(id=>$(id).disabled=!current || current.status!=='pending');
+    $('copyPhoto').disabled=!current || current.status!=='pending' || !mediaFile;
+    $('downloadPhoto').disabled=!mediaFile;
+    $('share').disabled=!current || current.status!=='pending' || !mediaFile;
+    $('queue').innerHTML=queue.map((q,i)=>`<tr><td>${i+1}</td><td>${escapeHtml(q.name)}</td><td>+${q.phone}</td><td><span class="status ${q.status}">${q.status}</span></td><td>${escapeHtml(q.time)}</td><td><button class="tiny secondary" data-index="${i}">Select</button></td></tr>`).join('');
+    document.querySelectorAll('[data-index]').forEach(b=>b.onclick=()=>{cursor=Number(b.dataset.index);render();saveState();});
+  }
+
+  function escapeHtml(s){ return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+  function openNamed(url){
+    whatsappTab=window.open(url,'beigeWhatsAppWeb');
+    if(!whatsappTab){ alert('Chrome blocked the WhatsApp tab. Allow pop-ups for this site, then try again.'); return false; }
+    whatsappTab.focus(); return true;
+  }
+  function openCurrent(){
+    const q=queue[cursor]; if(!q) return;
+    const gate=gateState(); if(!gate.ok){alert(gate.text);return;}
+    const desktop=$('mode').value==='web'||($('mode').value==='auto'&&!/iPhone|iPad|iPod|Android/i.test(navigator.userAgent));
+    const url=desktop?`https://web.whatsapp.com/send?phone=${q.phone}&text=${encodeURIComponent(q.message)}`:`https://wa.me/${q.phone}?text=${encodeURIComponent(q.message)}`;
+    if(desktop) openNamed(url); else location.href=url;
+  }
+  $('open').addEventListener('click',openCurrent);
+  $('launchWa').addEventListener('click',()=>openNamed('https://web.whatsapp.com/'));
+
+  async function copyCaption(){
+    const q=queue[cursor]; if(!q) return;
+    try { await navigator.clipboard.writeText(q.message); }
+    catch { const t=document.createElement('textarea');t.value=q.message;document.body.appendChild(t);t.select();document.execCommand('copy');t.remove(); }
+    $('copy').textContent='Caption copied'; setTimeout(()=>$('copy').textContent='Copy caption',1300);
+  }
+
+  $('copy').addEventListener('click',copyCaption);
+
+  async function imageAsPng(file){
+    const bitmap=await createImageBitmap(file), canvas=document.createElement('canvas');
+    canvas.width=bitmap.width; canvas.height=bitmap.height;
+    canvas.getContext('2d').drawImage(bitmap,0,0);
+    bitmap.close?.();
+    return await new Promise((resolve,reject)=>canvas.toBlob(blob=>blob?resolve(blob):reject(new Error('Could not convert image')),'image/png'));
+  }
+  $('copyPhoto').addEventListener('click',async()=>{
+    if(!mediaFile) return;
+    try{
+      if(!window.ClipboardItem || !navigator.clipboard?.write) throw new Error('Image clipboard unavailable');
+      const png=await imageAsPng(mediaFile);
+      await navigator.clipboard.write([new ClipboardItem({'image/png':png})]);
+      $('copyPhoto').textContent='Photo copied — paste with Ctrl+V';
+      setTimeout(()=>$('copyPhoto').innerHTML='<span class="step">2</span>Copy photo',1800);
+    }catch{ alert('Chrome could not copy this image. Use “Download photo”, then attach the file in WhatsApp Web.'); }
+  });
+  $('downloadPhoto').addEventListener('click',()=>{
+    if(!mediaFile) return;
+    const a=document.createElement('a'); a.href=mediaUrl||URL.createObjectURL(mediaFile); a.download=mediaFile.name||'beige-campaign-image.jpg'; a.click();
+  });
+
+  $('share').addEventListener('click',async()=>{
+    const q=queue[cursor]; if(!q || !mediaFile) return;
+    const payload={files:[mediaFile],text:q.message,title:'Beige campaign'};
+    if(!navigator.share || (navigator.canShare && !navigator.canShare({files:[mediaFile]}))){
+      await copyCaption();
+      alert('Photo sharing is not supported in this browser. The caption was copied; attach the selected photo manually in WhatsApp.');
+      return;
+    }
+    try { await navigator.share(payload); }
+    catch(err){ if(err.name!=='AbortError') alert('Could not open the Share Sheet. Try Safari on iPhone, or attach the photo manually.'); }
+  });
+  $('mark').addEventListener('click',()=>{ const q=queue[cursor]; if(q){const now=new Date();q.status='sent';q.sentAt=now.toISOString();q.time=now.toLocaleString();nextAllowedAt=Date.now()+(Number($('cooldown').value)||60)*1000;advance();} });
+  $('skip').addEventListener('click',()=>{ const q=queue[cursor]; if(q){q.status='skipped';q.time=new Date().toLocaleString();advance();} });
+
+  $('export').addEventListener('click',()=>{
+    const data=[['Source_Row','Name','Phone','Status','Timestamp','Media_File','Message'],...queue.map(q=>[q.sourceRow,q.name,'+'+q.phone,q.status,q.time,mediaFile?mediaFile.name:'',q.message])];
+    const blob=new Blob([data.map(r=>r.map(csvEscape).join(',')).join('\n')],{type:'text/csv;charset=utf-8'});
+    const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`beige_campaign_log_${new Date().toISOString().slice(0,10)}.csv`;a.click();URL.revokeObjectURL(a.href);
+  });
+
+  $('reset').addEventListener('click',async()=>{ if(!confirm('Clear the imported contacts and current queue?')) return; rows=[];headers=[];queue=[];cursor=0;nextAllowedAt=0;mediaFile=null;if(mediaUrl)URL.revokeObjectURL(mediaUrl);mediaUrl='';$('file').value='';$('media').value='';$('mediaPreview').classList.add('hidden');$('mapping').classList.add('hidden');$('sender').classList.add('hidden');['total','ready','suppressed','ineligible','invalid'].forEach(id=>$(id).textContent='0');$('confirm').checked=false;$('prepare').disabled=true;localStorage.removeItem(STATE_KEY);localStorage.removeItem('beigeSenderStateV2');await mediaStore('delete'); });
+  document.addEventListener('visibilitychange',()=>{if(document.hidden)saveState();}); window.addEventListener('pagehide',saveState);
+  restoreState(); setInterval(()=>{if(queue.length)render();},1000);
+})();
+</script>
+</body>
+</html>
